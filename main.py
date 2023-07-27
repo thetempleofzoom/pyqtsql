@@ -8,7 +8,8 @@ import sys
 import mysql.connector
 
 class DatabaseConnect:
-    def __init__(self, host="localhost", user="root", password="Lak$a@$$a3", database="school"):
+    def __init__(self, host="localhost", user="root",
+                 password="Lak$a@$$a3", database="school"):
         self.host = host
         self.user = user
         self.password = password
@@ -72,13 +73,18 @@ class MainWindow(QMainWindow):
         
     def load_data(self):
         connection = DatabaseConnect().connect()
-        result = connection.execute("SELECT * FROM students")
+        # in mysql, always create cursor object even to read
+        cursor = connection.cursor()
+        cursor.execute("SELECT * FROM students")
+        #use fetchall command to produce results
+        result = cursor.fetchall()
         #always puts cursor at 0 to avoid dups
         self.table.setRowCount(0)
         for index, row_data in enumerate(result):
             self.table.insertRow(index)
             for column, data in enumerate(row_data):
                 self.table.setItem(index, column, QTableWidgetItem(str(data)))
+        cursor.close()
         connection.close()
 
     def insert(self):
@@ -159,16 +165,18 @@ class InsertDialog(QDialog):
         #add entry into sql database
         connection = DatabaseConnect().connect()
         cursor = connection.cursor()
-        cursor.execute("INSERT INTO students (name, course, mobile) VALUES (?,?,?)",
+        # '?' is placeholder for sqlite, '%s' for mysql
+        cursor.execute("INSERT INTO students (name, course, mobile) VALUES (%s,%s,%s)",
                        (name, course, mobile))
         connection.commit()
-        count = cursor.execute("SELECT COUNT(id) FROM students")
-        count = count.fetchall()[0][0]
+        #count = cursor.execute("SELECT COUNT(id) FROM students")
+        #count = count.fetchall()[0][0]
+        #print(count)
         cursor.close()
         connection.close()
         #refresh table
         mainwindow.load_data()
-        print(f'{count} students in database')
+        #print(f'{count} students in database')
         
 
 class SearchDialog(QDialog):
@@ -190,6 +198,7 @@ class SearchDialog(QDialog):
         layout.addWidget(submit)
 
         self.setLayout(layout)
+
     def find_student(self):
         #erase any highlighted items
         mainwindow.table.setCurrentItem(None)
@@ -242,7 +251,7 @@ class EditDialog(QDialog):
     def edit_student(self):
         connection = DatabaseConnect().connect()
         cursor = connection.cursor()
-        cursor.execute("UPDATE students SET name = ?, course = ?, mobile = ? WHERE id = ?",
+        cursor.execute("UPDATE students SET name = %s, course = %s, mobile = %s WHERE id = %s",
                        (self.student_name.text(), self.student_class.currentText(), self.student_mobile.text(),
                         self.id))
         connection.commit()
@@ -273,7 +282,7 @@ class DeleteDialog(QMessageBox):
         if i.text() == "OK":
             connection = DatabaseConnect().connect()
             cursor = connection.cursor()
-            cursor.execute("DELETE FROM students WHERE id = ?", (int(self.id), ))
+            cursor.execute("DELETE FROM students WHERE id = %s", (int(self.id), ))
             connection.commit()
             cursor.close()
             connection.close()
