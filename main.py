@@ -8,22 +8,22 @@ import sys, os
 import mysql.connector
 from dotenv import load_dotenv
 
+# n/b didn't work with hte load_dotenv cmd at the bottom with other code.
+load_dotenv()
 
 class DatabaseConnect:
     def __init__(self, host="localhost", user="root",
-                 password=os.getenv("password"), database="school"):
+                 password=os.getenv("sqlpw"), database="school"):
         self.host = host
         self.user = user
         self.password = password
         self.database = database
-
     def connect(self):
         connection = mysql.connector.connect(host=self.host, user=self.user,
                                              password=self.password, database=self.database)
         return connection
         
-        
-    
+
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -302,7 +302,7 @@ class AboutDialog(QMessageBox):
         self.setText(content)
 
 
-load_dotenv()
+
 app = QApplication(sys.argv)
 mainwindow = MainWindow()
 mainwindow.show()
