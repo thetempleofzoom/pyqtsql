@@ -4,12 +4,14 @@ from PyQt6.QtWidgets import QMainWindow, QApplication, QLabel, QWidget, \
     QTableWidgetItem, QDialog, QVBoxLayout, QToolBar, QStatusBar, \
     QMessageBox
 from PyQt6.QtGui import QAction, QIcon
-import sys
+import sys, os
 import mysql.connector
+from dotenv import load_dotenv
+
 
 class DatabaseConnect:
     def __init__(self, host="localhost", user="root",
-                 password="Lak$a@$$a3", database="school"):
+                 password=os.getenv("password"), database="school"):
         self.host = host
         self.user = user
         self.password = password
@@ -300,10 +302,9 @@ class AboutDialog(QMessageBox):
         self.setText(content)
 
 
+load_dotenv()
 app = QApplication(sys.argv)
 mainwindow = MainWindow()
 mainwindow.show()
 mainwindow.load_data()
-#insert = InsertDialog()
-#insert.show()
 sys.exit(app.exec())
